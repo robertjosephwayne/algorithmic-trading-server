@@ -10,11 +10,10 @@ module.exports = {
         node: true,
     },
     rules: {
-        camelcase: 'error',
         'spaced-comment': 'error',
         quotes: ['error', 'single'],
         'no-duplicate-imports': 'error',
         'no-multiple-empty-lines': 'error',
         'prefer-const': 'error',
     },
-}
+};
