@@ -1,12 +1,15 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Express, Request, Response } from 'express';
 import { Server } from 'socket.io';
 import http from 'http';
-import dotenv from 'dotenv';
 import { websocketClient } from '@polygon.io/client-js';
+import apiRouter from './src/routes/api';
 
-dotenv.config();
-
+const POLYGON_API_KEY = process.env.POLYGON_API_KEY || '';
 const port = process.env.PORT || 8000;
+
 const app: Express = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -23,7 +26,6 @@ server.listen(port, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });
 
-const POLYGON_API_KEY = process.env.POLYGON_API_KEY || '';
 const cryptoWS = websocketClient(POLYGON_API_KEY).crypto();
 
 cryptoWS.onmessage = ({ data }) => {
@@ -33,3 +35,5 @@ cryptoWS.onmessage = ({ data }) => {
     }
     io.emit('bar', result);
 };
+
+app.use('/api', apiRouter);
