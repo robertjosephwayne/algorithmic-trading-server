@@ -19,4 +19,32 @@ const getTickers = async (req: Request, res: Response) => {
     }
 };
 
-export { getTickers };
+const getSnapshotAllTickers = async (req: Request, res: Response) => {
+    const response = await polygonRestClient.crypto.snapshotAllTickers();
+    console.log(response);
+
+    if (response.status === 'OK' && response.tickers) {
+        const tickers = [];
+
+        for (const tickerWithDetails of response?.tickers) {
+            if (tickerWithDetails?.lastTrade?.x !== 1) continue;
+
+            let formattedTicker = tickerWithDetails.ticker?.replace('X:', '');
+            if (formattedTicker && formattedTicker?.endsWith('USD')) {
+                formattedTicker = formattedTicker.slice(0, formattedTicker.length - 3);
+                formattedTicker += '-USD';
+            }
+
+            tickers.push({
+                ...tickerWithDetails,
+                ticker: formattedTicker,
+            });
+        }
+
+        return res.send(tickers);
+    } else {
+        return res.sendStatus(500);
+    }
+};
+
+export { getTickers, getSnapshotAllTickers };
