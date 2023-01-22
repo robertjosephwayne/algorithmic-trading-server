@@ -21,7 +21,6 @@ const getTickers = async (req: Request, res: Response) => {
 
 const getSnapshotAllTickers = async (req: Request, res: Response) => {
     const response = await polygonRestClient.crypto.snapshotAllTickers();
-    console.log(response);
 
     if (response.status === 'OK' && response.tickers) {
         const tickers = [];
