@@ -7,7 +7,6 @@ const getTickers = async (req: Request, res: Response) => {
 
     if (response.status === 'OK') {
         const tickersWithDetails = response.results;
-        console.log(tickersWithDetails);
 
         const tickers = tickersWithDetails.map((tickerWithDetails) => {
             return {
