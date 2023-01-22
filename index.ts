@@ -47,7 +47,10 @@ cryptoWS.onmessage = ({ data }) => {
         );
     }
 
-    io.emit('bar', result);
+    // Only emit events from Coinbase exchang
+    if (result.x === 1) {
+        io.emit('bar', result);
+    }
 };
 
 app.use('/api', cors(corsOptions), apiRouter);
