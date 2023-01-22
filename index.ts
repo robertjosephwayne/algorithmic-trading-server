@@ -36,23 +36,17 @@ const cryptoWS = websocketClient(POLYGON_API_KEY).crypto();
 cryptoWS.onmessage = ({ data }) => {
     const [result] = JSON.parse(data);
 
-    const tickers = [
-        'XT.X:BTC-USD',
-        'XT.X:ETH-USD',
-        'XT.X:XRP-USD',
-        'XT.X:ADA-USD',
-        'XT.X:DOGE-USD',
-        'XT.X:SOL-USD',
-    ];
+    const tickers = ['XT.*'];
 
     if (result.message === 'authenticated') {
-        cryptoWS.send(
+        return cryptoWS.send(
             JSON.stringify({
                 action: 'subscribe',
                 params: tickers.join(),
             }),
         );
     }
+
     io.emit('bar', result);
 };
 
