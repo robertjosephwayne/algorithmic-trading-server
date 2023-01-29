@@ -4,11 +4,13 @@ dotenv.config();
 import express, { Express, Request, Response } from 'express';
 import { Server } from 'socket.io';
 import http from 'http';
-import { websocketClient } from '@polygon.io/client-js';
 import cors from 'cors';
 import apiRouter from './src/routes/api';
+import Alpaca from '@alpacahq/alpaca-trade-api';
+import { SUPPORTED_TICKERS } from './constants';
 
-const POLYGON_API_KEY = process.env.POLYGON_API_KEY || '';
+const ALPACA_API_KEY = process.env.ALPACA_API_KEY || '';
+const ALPACA_API_SECRET = process.env.ALPACA_API_SECRET || '';
 const PORT = process.env.PORT || 8000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
 
@@ -31,26 +33,25 @@ server.listen(PORT, () => {
     console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
 });
 
-const cryptoWS = websocketClient(POLYGON_API_KEY).crypto();
-
-cryptoWS.onmessage = ({ data }) => {
-    const [result] = JSON.parse(data);
-
-    const tickers = ['XT.*'];
-
-    if (result.message === 'authenticated') {
-        return cryptoWS.send(
-            JSON.stringify({
-                action: 'subscribe',
-                params: tickers.join(),
-            }),
-        );
-    }
-
-    // Only emit events from Coinbase exchang
-    if (result.x === 1) {
-        io.emit('bar', result);
-    }
-};
-
 app.use('/api', cors(corsOptions), apiRouter);
+
+const alpaca = new Alpaca({
+    keyId: ALPACA_API_KEY,
+    secretKey: ALPACA_API_SECRET,
+    feed: 'sip',
+    paper: true,
+});
+
+const socket = alpaca.crypto_stream_v2;
+
+socket.onConnect(function () {
+    socket.subscribeForTrades(SUPPORTED_TICKERS);
+});
+
+socket.onCryptoTrade(function (trade) {
+    if (trade.Exchange === 'CBSE') {
+        io.emit('bar', trade);
+    }
+});
+
+socket.connect();
