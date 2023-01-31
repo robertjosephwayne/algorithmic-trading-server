@@ -23,4 +23,20 @@ const getLatestCryptoTrades = async (req: Request, res: Response) => {
     return res.send(response);
 };
 
-export { getLatestCryptoTrades };
+const getCryptoBars = async (req: Request, res: Response) => {
+    const result = await alpaca.getCryptoBars('BTCUSD', {
+        timeframe: alpaca.newTimeframe(1, alpaca.timeframeUnit.DAY),
+        start: '2023-01-01',
+        exchanges: 'CBSE',
+    });
+
+    const bars = [];
+
+    for await (const bar of result) {
+        bars.push(bar);
+    }
+
+    return res.send(bars);
+};
+
+export { getCryptoBars, getLatestCryptoTrades };
