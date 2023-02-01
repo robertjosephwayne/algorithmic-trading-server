@@ -27,8 +27,8 @@ const getCryptoBars = async (req: Request, res: Response) => {
     const symbol = req.params.symbol;
 
     const result = await alpaca.getCryptoBars(symbol, {
-        timeframe: alpaca.newTimeframe(1, alpaca.timeframeUnit.DAY),
-        start: '2023-01-01',
+        timeframe: alpaca.newTimeframe(1, alpaca.timeframeUnit.MONTH),
+        start: '2010-01-01',
         exchanges: 'CBSE',
     });
 
