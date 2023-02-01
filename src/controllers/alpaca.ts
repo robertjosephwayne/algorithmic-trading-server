@@ -25,9 +25,25 @@ const getLatestCryptoTrades = async (req: Request, res: Response) => {
 
 const getCryptoBars = async (req: Request, res: Response) => {
     const symbol = req.params.symbol;
+    const timeframe = req.params.timeframe;
+
+    let alpacaTimeframe;
+    switch (timeframe) {
+        case 'daily':
+            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.DAY);
+            break;
+        case 'weekly':
+            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.WEEK);
+            break;
+        case 'monthly':
+            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.MONTH);
+            break;
+        default:
+            return res.sendStatus(400);
+    }
 
     const result = await alpaca.getCryptoBars(symbol, {
-        timeframe: alpaca.newTimeframe(1, alpaca.timeframeUnit.MONTH),
+        timeframe: alpacaTimeframe,
         start: '2010-01-01',
         exchanges: 'CBSE',
     });
