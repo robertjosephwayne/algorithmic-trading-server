@@ -9,6 +9,6 @@ router.get('/snapshot/markets/crypto/tickers', getSnapshotAllTickers);
 
 router.get('/trades/latest', getLatestCryptoTrades);
 
-router.get('/crypto/bars', getCryptoBars);
+router.get('/crypto/bars/:symbol', getCryptoBars);
 
 export = router;
