@@ -25,18 +25,33 @@ const getLatestCryptoTrades = async (req: Request, res: Response) => {
 
 const getCryptoBars = async (req: Request, res: Response) => {
     const symbol = req.params.symbol;
-    const timeframe = req.params.timeframe;
+    const timeframe = req.query.timeframe;
+    let start = '2023-01-01';
+    if (typeof req.query.start === 'string') {
+        start = decodeURIComponent(req.query.start);
+    }
+
+    let interval = 1;
+    if (typeof req.query.interval === 'string') {
+        interval = parseInt(req.query.interval);
+    }
 
     let alpacaTimeframe;
     switch (timeframe) {
-        case 'daily':
-            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.DAY);
+        case 'minute':
+            alpacaTimeframe = alpaca.newTimeframe(interval, alpaca.timeframeUnit.MIN);
             break;
-        case 'weekly':
-            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.WEEK);
+        case 'hour':
+            alpacaTimeframe = alpaca.newTimeframe(interval, alpaca.timeframeUnit.HOUR);
             break;
-        case 'monthly':
-            alpacaTimeframe = alpaca.newTimeframe(1, alpaca.timeframeUnit.MONTH);
+        case 'day':
+            alpacaTimeframe = alpaca.newTimeframe(interval, alpaca.timeframeUnit.DAY);
+            break;
+        case 'week':
+            alpacaTimeframe = alpaca.newTimeframe(interval, alpaca.timeframeUnit.WEEK);
+            break;
+        case 'month':
+            alpacaTimeframe = alpaca.newTimeframe(interval, alpaca.timeframeUnit.MONTH);
             break;
         default:
             return res.sendStatus(400);
@@ -44,7 +59,7 @@ const getCryptoBars = async (req: Request, res: Response) => {
 
     const result = await alpaca.getCryptoBars(symbol, {
         timeframe: alpacaTimeframe,
-        start: '2010-01-01',
+        start,
         exchanges: 'CBSE',
     });
 
