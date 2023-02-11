@@ -1,1 +1,0 @@
-export const SUPPORTED_TICKERS = ['BTCUSD', 'ETHUSD', 'LTCUSD'];
