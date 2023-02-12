@@ -42,7 +42,8 @@ def get_crypto_bars(symbol):
             "high": bar.h,
             "low": bar.l,
             "open": bar.o,
-            "close": bar.c
+            "close": bar.c,
+            "exchange": bar.x
         })
 
     return response
