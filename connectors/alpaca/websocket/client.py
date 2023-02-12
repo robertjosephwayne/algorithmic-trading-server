@@ -12,11 +12,10 @@ class AlpacaWebSocketClient:
         self._handle_trade = None
         self._crypto_stream = CryptoDataStream(api_key=api_key, secret_key=api_secret)
 
-    def start_crypto_stream(self):
-        self._crypto_stream.subscribe_trades(self._handle_trade, "BTC/USD", "ETH/USD", "LTC/USD")
-        self._crypto_stream.run()
+    def subscribe_trades(self, tickers, handler):
+        self._crypto_stream.subscribe_trades(handler, *tickers)
 
-    def set_handle_trade(self, handler):
-        self._handle_trade = handler
+    def start_stream(self):
+        self._crypto_stream.run()
 
 

@@ -13,20 +13,20 @@ CORS(app)
 socketio = SocketIO(app=app, cors_allowed_origins="*")
 
 
-async def handle_crypto_bar(bar):
-    bar = {
-        "symbol": bar.symbol,
-        "price": bar.price
+async def handle_crypto_trade(trade):
+    trade = {
+        "symbol": trade.symbol,
+        "price": trade.price
     }
-    socketio.emit('bar', bar)
+    socketio.emit('bar', trade)
 
 
 alpaca = AlpacaWebSocketClient(
     api_key=config["ALPACA"]["API_KEY"],
     api_secret=config["ALPACA"]["SECRET_KEY"]
 )
-alpaca.set_handle_trade(handle_crypto_bar)
-threading.Thread(target=alpaca.start_crypto_stream).start()
+alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
+threading.Thread(target=alpaca.start_stream).start()
 
 if __name__ == '__main__':
     socketio.run(app)
