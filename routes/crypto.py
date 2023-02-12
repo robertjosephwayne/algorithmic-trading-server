@@ -8,7 +8,7 @@ crypto_blueprint = Blueprint('crypto', __name__)
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
 rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SECRET_KEY"], base_url=base_url)
-supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD"]
+supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD", "BCHUSD"]
 
 
 @crypto_blueprint.route("/bars/<symbol>")
