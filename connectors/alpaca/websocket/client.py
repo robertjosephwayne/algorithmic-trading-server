@@ -19,6 +19,12 @@ class AlpacaWebSocketClient:
     def subscribe_trades(self, tickers, handler):
         self._crypto_stream.subscribe_trades(handler, *tickers)
 
+    def subscribe_quotes(self, tickers, handler):
+        self._crypto_stream.subscribe_quotes(handler, *tickers)
+
+    def subscribe_bars(self, tickers, handler):
+        self._crypto_stream.subscribe_bars(handler, *tickers)
+
     def connect(self):
         websocket_thread = Thread(target=self._run_websocket)
         websocket_thread.daemon = True
