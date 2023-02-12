@@ -18,6 +18,11 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app=app, cors_allowed_origins="*")
 
+base_url = URL("https://paper-api.alpaca.markets")
+data_feed = "sip"
+rest = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url=base_url)
+crypto_stream = CryptoDataStream(api_key=API_KEY, secret_key=SECRET_KEY)
+
 
 @app.route("/api/crypto/bars/<symbol>")
 def get_crypto_bars(symbol):
@@ -56,10 +61,22 @@ def get_crypto_bars(symbol):
     return response
 
 
-base_url = URL("https://paper-api.alpaca.markets")
-data_feed = "sip"
-rest = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url=base_url)
-crypto_stream = CryptoDataStream(api_key=API_KEY, secret_key=SECRET_KEY)
+@app.route("/api/trades/latest")
+def get_latest_crypto_trades():
+    SUPPORTED_TICKERS = ["BTCUSD", "ETHUSD", "LTCUSD"]
+    result = rest.get_latest_crypto_trades(SUPPORTED_TICKERS, "CBSE")
+
+    response = {}
+
+    for ticker in SUPPORTED_TICKERS:
+        trade = result[ticker]
+        response[ticker] = {
+            "price": trade.price,
+            "timestamp": trade.timestamp,
+            "exchange": trade.x
+        }
+
+    return response
 
 
 async def handle_crypto_bar(bar):
