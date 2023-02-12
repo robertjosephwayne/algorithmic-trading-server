@@ -26,7 +26,7 @@ alpaca = AlpacaWebSocketClient(
     api_secret=config["ALPACA"]["SECRET_KEY"]
 )
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
-threading.Thread(target=alpaca.start_stream).start()
+alpaca.connect()
 
 if __name__ == '__main__':
     socketio.run(app)
