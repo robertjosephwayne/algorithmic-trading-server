@@ -3,3 +3,5 @@
 .env
 info.log
 __pycache__/
+.vscode
+.DS_Store
