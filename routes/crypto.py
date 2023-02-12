@@ -8,6 +8,7 @@ crypto_blueprint = Blueprint('crypto', __name__)
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
 rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SECRET_KEY"], base_url=base_url)
+supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD"]
 
 
 @crypto_blueprint.route("/bars/<symbol>")
@@ -47,9 +48,30 @@ def get_crypto_bars(symbol):
     return response
 
 
+@crypto_blueprint.route("/bars/latest")
+def get_latest_crypto_bars():
+    result = rest.get_latest_crypto_bars(supported_tickers, "CBSE")
+
+    response = {}
+
+    for ticker in supported_tickers:
+        bar = result[ticker]
+        response[ticker] = {
+            "high": bar.h,
+            "low": bar.l,
+            "open": bar.o,
+            "close": bar.c,
+            "timestamp": bar.t,
+            "volume": bar.v,
+            "weighted_volume": bar.vw,
+            "exchange": bar.x
+        }
+
+    return response
+
+
 @crypto_blueprint.route("/trades/latest")
 def get_latest_crypto_trades():
-    supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD"]
     result = rest.get_latest_crypto_trades(supported_tickers, "CBSE")
 
     response = {}
