@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
-import threading
 from connectors.alpaca.websocket.client import AlpacaWebSocketClient
 from routes.crypto import crypto_blueprint
 from config import config
