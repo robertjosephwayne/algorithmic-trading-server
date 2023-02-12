@@ -1,5 +1,4 @@
 import os
-import urllib.parse
 from flask import Flask, request
 from flask_cors import CORS
 from alpaca.data.live import CryptoDataStream
@@ -7,6 +6,7 @@ from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
 from dotenv import load_dotenv
 import threading
 from flask_socketio import SocketIO
+from routes.crypto import crypto_blueprint
 
 load_dotenv()
 
@@ -15,68 +15,13 @@ SECRET_KEY = os.environ.get('ALPACA_API_SECRET')
 CLIENT_URL = os.environ.get('CLIENT_URL')
 
 app = Flask(__name__)
+app.register_blueprint(crypto_blueprint)
 CORS(app)
 socketio = SocketIO(app=app, cors_allowed_origins="*")
 
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
-rest = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url=base_url)
 crypto_stream = CryptoDataStream(api_key=API_KEY, secret_key=SECRET_KEY)
-
-
-@app.route("/api/crypto/bars/<symbol>")
-def get_crypto_bars(symbol):
-    timeframe = request.args.get("timeframe")
-
-    encoded_start = request.args.get("start")
-    start = urllib.parse.unquote(encoded_start)
-
-    alpaca_timeframe = None
-    match timeframe:
-        case 'minute':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Minute)
-        case 'hour':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Hour)
-        case 'day':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Day)
-        case 'week':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Week)
-        case 'month':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Month)
-
-    bars = rest.get_crypto_bars(symbol, alpaca_timeframe, start)
-
-    response = list()
-
-    for bar in bars:
-        response.append({
-            "symbol": symbol,
-            "timestamp": bar.t,
-            "high": bar.h,
-            "low": bar.l,
-            "open": bar.o,
-            "close": bar.c
-        })
-
-    return response
-
-
-@app.route("/api/trades/latest")
-def get_latest_crypto_trades():
-    SUPPORTED_TICKERS = ["BTCUSD", "ETHUSD", "LTCUSD"]
-    result = rest.get_latest_crypto_trades(SUPPORTED_TICKERS, "CBSE")
-
-    response = {}
-
-    for ticker in SUPPORTED_TICKERS:
-        trade = result[ticker]
-        response[ticker] = {
-            "price": trade.price,
-            "timestamp": trade.timestamp,
-            "exchange": trade.x
-        }
-
-    return response
 
 
 async def handle_crypto_bar(bar):
