@@ -1,6 +1,7 @@
 # Financial Dashboard Server
 
-Server for the following application: [https://trading.robertjosephwayne.com/](https://trading.robertjosephwayne.com/)
+Server for the following application: 
+<a href="https://trading.robertjosephwayne.com" target="_blank">trading.robertjosephwayne.com</a>
 
 ---
 
