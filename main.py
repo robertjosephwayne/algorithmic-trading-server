@@ -1,27 +1,21 @@
-import os
-from flask import Flask, request
+from flask import Flask
 from flask_cors import CORS
-from alpaca.data.live import CryptoDataStream
-from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
-from dotenv import load_dotenv
-import threading
 from flask_socketio import SocketIO
+from alpaca.data.live import CryptoDataStream
+from alpaca_trade_api.rest import URL
+from config import config
+import threading
 from routes.crypto import crypto_blueprint
 
-load_dotenv()
-
-API_KEY = os.environ.get('ALPACA_API_KEY')
-SECRET_KEY = os.environ.get('ALPACA_API_SECRET')
-CLIENT_URL = os.environ.get('CLIENT_URL')
 
 app = Flask(__name__)
-app.register_blueprint(crypto_blueprint)
+app.register_blueprint(crypto_blueprint, url_prefix='/api/crypto')
 CORS(app)
 socketio = SocketIO(app=app, cors_allowed_origins="*")
 
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
-crypto_stream = CryptoDataStream(api_key=API_KEY, secret_key=SECRET_KEY)
+crypto_stream = CryptoDataStream(api_key=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SECRET_KEY"])
 
 
 async def handle_crypto_bar(bar):

@@ -1,23 +1,16 @@
-import os
 from flask import Blueprint, request
 import urllib.parse
 from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
-from dotenv import load_dotenv
-
-load_dotenv()
+from config import config
 
 crypto_blueprint = Blueprint('crypto', __name__)
 
-API_KEY = os.environ.get('ALPACA_API_KEY')
-SECRET_KEY = os.environ.get('ALPACA_API_SECRET')
-CLIENT_URL = os.environ.get('CLIENT_URL')
-
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
-rest = REST(key_id=API_KEY, secret_key=SECRET_KEY, base_url=base_url)
+rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SECRET_KEY"], base_url=base_url)
 
 
-@crypto_blueprint.route("/api/crypto/bars/<symbol>")
+@crypto_blueprint.route("/bars/<symbol>")
 def get_crypto_bars(symbol):
     timeframe = request.args.get("timeframe")
 
@@ -54,7 +47,7 @@ def get_crypto_bars(symbol):
     return response
 
 
-@crypto_blueprint.route("/api/crypto/trades/latest")
+@crypto_blueprint.route("/trades/latest")
 def get_latest_crypto_trades():
     supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD"]
     result = rest.get_latest_crypto_trades(supported_tickers, "CBSE")
