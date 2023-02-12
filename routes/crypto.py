@@ -31,7 +31,7 @@ def get_crypto_bars(symbol):
         case 'month':
             alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Month)
 
-    bars = rest.get_crypto_bars(symbol, alpaca_timeframe, start)
+    bars = rest.get_crypto_bars(symbol, alpaca_timeframe, start, limit=60, exchanges=['CBSE'])
 
     response = list()
 
