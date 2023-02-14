@@ -86,3 +86,14 @@ def get_latest_crypto_trades():
         }
 
     return response
+
+
+@crypto_blueprint.route("/account")
+def get_account():
+    result = rest.get_account()
+
+    response = {
+        "buying_power": result.buying_power
+    }
+    
+    return response
