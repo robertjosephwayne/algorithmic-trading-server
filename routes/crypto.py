@@ -93,7 +93,30 @@ def get_account():
     result = rest.get_account()
 
     response = {
+        "cash": result.cash,
+        "position_market_value": result.position_market_value,
+        "equity": result.equity,
         "buying_power": result.buying_power
     }
-    
+
+    return response
+
+
+@crypto_blueprint.route("/positions")
+def get_positions():
+    result = rest.list_positions()
+    print(result)
+
+    response = []
+
+    for asset in result:
+        response.append({
+            "symbol": asset.symbol,
+            "quantity": asset.qty,
+            "side": asset.side,
+            "exchange": asset.exchange,
+            "cost_basis": asset.cost_basis,
+            "market_value": asset.market_value,
+        })
+
     return response
