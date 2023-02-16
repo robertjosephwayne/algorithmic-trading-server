@@ -141,3 +141,18 @@ def get_activities():
         })
 
     return response
+
+
+@crypto_blueprint.route("/portfolio-history")
+def get_portfolio_history():
+    result = rest.get_portfolio_history(timeframe="1D")
+
+    response = []
+
+    for i in range(len(result.equity)):
+        response.append({
+            "timestamp": result.timestamp[i] * 1000,
+            "equity": result.equity[i]
+        })
+
+    return response
