@@ -4,6 +4,7 @@ from flask_socketio import SocketIO
 from connectors.alpaca.websocket.client import AlpacaWebSocketClient
 from routes.crypto import crypto_blueprint
 from config import config
+from bot import process_bar
 
 
 app = Flask(__name__)
@@ -25,6 +26,7 @@ alpaca = AlpacaWebSocketClient(
     api_secret=config["ALPACA"]["SECRET_KEY"]
 )
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
+alpaca.subscribe_bars(["BTC/USD", "ETH/USD", "LTC/USD"], process_bar)
 alpaca.connect()
 
 if __name__ == '__main__':
