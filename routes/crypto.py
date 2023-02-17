@@ -2,6 +2,7 @@ from flask import Blueprint, request
 import urllib.parse
 from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
 from config import config
+from pyrfc3339 import parse
 
 crypto_blueprint = Blueprint('crypto', __name__)
 
@@ -145,8 +146,26 @@ def get_activities():
 
 @crypto_blueprint.route("/portfolio-history")
 def get_portfolio_history():
-    result = rest.get_portfolio_history(timeframe="1D")
+    timeframe = request.args.get("timeframe")
 
+    encoded_start = request.args.get("start")
+    start = urllib.parse.unquote(encoded_start)
+    start = parse(start).strftime("%Y-%m-%d")
+
+    alpaca_timeframe = None
+    match timeframe:
+        case '1M':
+            alpaca_timeframe = "1Min"
+        case '5M':
+            alpaca_timeframe = "5Min"
+        case '15M':
+            alpaca_timeframe = "15Min"
+        case '1H':
+            alpaca_timeframe = timeframe
+        case '1D':
+            alpaca_timeframe = timeframe
+
+    result = rest.get_portfolio_history(date_start=start, timeframe=alpaca_timeframe)
     response = []
 
     for i in range(len(result.equity)):
