@@ -10,6 +10,7 @@ rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SEC
 SMA_FAST = 12
 SMA_SLOW = 24
 QTY_PER_TRADE = 1
+USD_PER_TRADE = 10000
 
 
 def get_position(symbol):
@@ -52,10 +53,8 @@ async def process_bar(bar):
     should_buy = get_signal(bars.sma_fast, bars.sma_slow)
 
     if position == 0 and should_buy == True:
-        qty = QTY_PER_TRADE
-        print(f'Symbol: {symbol} / Side: BUY / Quantity: {qty}')
-        rest.submit_order(symbol=symbol, qty=qty, side="buy", time_in_force="gtc")
+        print(f'Symbol: {symbol} / Side: BUY / Notional Amount: {USD_PER_TRADE}')
+        rest.submit_order(symbol=symbol, notional=USD_PER_TRADE, side="buy", time_in_force="gtc")
     elif position > 0 and should_buy == False:
-        qty = position
-        print(f'Symbol: {symbol} / Side: SELL / Quantity: {qty}')
-        rest.submit_order(symbol=symbol, qty=qty, side="sell", time_in_force="gtc")
+        print(f'Symbol: {symbol} / Side: SELL / Quantity: {position}')
+        rest.submit_order(symbol=symbol, qty=position, side="sell", time_in_force="gtc")
