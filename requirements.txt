@@ -53,3 +53,4 @@ watchfiles==0.18.1
 websocket-client==1.5.1
 websockets==10.4
 yarl==1.8.2
+git+https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/polakowo/vectorbt.pro.git

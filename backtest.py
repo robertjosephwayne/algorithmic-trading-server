@@ -1,4 +1,4 @@
-import vectorbt as vbt
+import vectorbtpro as vbt
 from config import config
 
 vbt.settings.data["alpaca"]["key_id"] = config["ALPACA"]["API_KEY"]
