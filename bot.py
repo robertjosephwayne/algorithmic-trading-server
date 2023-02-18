@@ -45,14 +45,17 @@ def get_bars(symbol):
 
 async def process_bar(bar):
     symbol = bar.symbol.replace("/", "")
+
     bars = get_bars(symbol=symbol)
 
     position = get_position(symbol=symbol)
     should_buy = get_signal(bars.sma_fast, bars.sma_slow)
 
-    if position < 1 and should_buy == True:
-        print(f'Symbol: {symbol} / Side: BUY / Quantity: {QTY_PER_TRADE}')
-        rest.submit_order(symbol=symbol, qty=QTY_PER_TRADE, side="buy", time_in_force="gtc")
-    elif position >= 1 and should_buy == False:
-        print(f'Symbol: {symbol} / Side: SELL / Quantity: {QTY_PER_TRADE}')
-        rest.submit_order(symbol=symbol, qty=QTY_PER_TRADE, side="sell", time_in_force="gtc")
+    if position == 0 and should_buy == True:
+        qty = QTY_PER_TRADE
+        print(f'Symbol: {symbol} / Side: BUY / Quantity: {qty}')
+        rest.submit_order(symbol=symbol, qty=qty, side="buy", time_in_force="gtc")
+    elif position > 0 and should_buy == False:
+        qty = position
+        print(f'Symbol: {symbol} / Side: SELL / Quantity: {qty}')
+        rest.submit_order(symbol=symbol, qty=qty, side="sell", time_in_force="gtc")
