@@ -29,5 +29,3 @@ class AlpacaWebSocketClient:
         websocket_thread = Thread(target=self._run_websocket)
         websocket_thread.daemon = True
         websocket_thread.start()
-
-

@@ -9,9 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 app.include_router(crypto.router)
 
-origins = [
-    config["CLIENT_URL"]
-]
+origins = [config["CLIENT_URL"]]
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,20 +23,13 @@ socket_manager = SocketManager(app=app, mount_location="/")
 
 
 async def handle_crypto_trade(trade):
-    trade = {
-        "symbol": trade.symbol,
-        "price": trade.price
-    }
-    await socket_manager.emit('bar', trade)
+    trade = {"symbol": trade.symbol, "price": trade.price}
+    await socket_manager.emit("bar", trade)
 
 
 alpaca = AlpacaWebSocketClient(
-    api_key=config["ALPACA"]["API_KEY"],
-    api_secret=config["ALPACA"]["SECRET_KEY"]
+    api_key=config["ALPACA"]["API_KEY"], api_secret=config["ALPACA"]["SECRET_KEY"]
 )
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
 alpaca.subscribe_bars(["BTC/USD", "ETH/USD", "LTC/USD"], process_bar)
 alpaca.connect()
-
-
-

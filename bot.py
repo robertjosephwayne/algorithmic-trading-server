@@ -3,9 +3,14 @@ import math
 from config import config
 
 from alpaca_trade_api.rest import TimeFrame, URL, REST
+
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
-rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SECRET_KEY"], base_url=base_url)
+rest = REST(
+    key_id=config["ALPACA"]["API_KEY"],
+    secret_key=config["ALPACA"]["SECRET_KEY"],
+    base_url=base_url,
+)
 
 SMA_FAST = 12
 SMA_SLOW = 24
@@ -39,8 +44,8 @@ def get_signal(fast, slow):
 
 def get_bars(symbol):
     bars = rest.get_crypto_bars(symbol, TimeFrame.Minute, exchanges=["CBSE"]).df
-    bars[f'sma_fast'] = get_sma(bars.close, SMA_FAST)
-    bars[f'sma_slow'] = get_sma(bars.close, SMA_SLOW)
+    bars[f"sma_fast"] = get_sma(bars.close, SMA_FAST)
+    bars[f"sma_slow"] = get_sma(bars.close, SMA_SLOW)
     return bars
 
 
@@ -53,8 +58,10 @@ async def process_bar(bar):
     should_buy = get_signal(bars.sma_fast, bars.sma_slow)
 
     if position == 0 and should_buy == True:
-        print(f'Symbol: {symbol} / Side: BUY / Notional Amount: {USD_PER_TRADE}')
-        rest.submit_order(symbol=symbol, notional=USD_PER_TRADE, side="buy", time_in_force="gtc")
+        print(f"Symbol: {symbol} / Side: BUY / Notional Amount: {USD_PER_TRADE}")
+        rest.submit_order(
+            symbol=symbol, notional=USD_PER_TRADE, side="buy", time_in_force="gtc"
+        )
     elif position > 0 and should_buy == False:
-        print(f'Symbol: {symbol} / Side: SELL / Quantity: {position}')
+        print(f"Symbol: {symbol} / Side: SELL / Quantity: {position}")
         rest.submit_order(symbol=symbol, qty=position, side="sell", time_in_force="gtc")
