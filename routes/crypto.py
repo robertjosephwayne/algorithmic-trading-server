@@ -1,10 +1,12 @@
-from flask import Blueprint, request
+from fastapi import APIRouter
 import urllib.parse
 from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
 from config import config
 from pyrfc3339 import parse
 
-crypto_blueprint = Blueprint('crypto', __name__)
+router = APIRouter(
+    prefix="/api/crypto"
+)
 
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
@@ -12,12 +14,9 @@ rest = REST(key_id=config["ALPACA"]["API_KEY"], secret_key=config["ALPACA"]["SEC
 supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD", "BCHUSD"]
 
 
-@crypto_blueprint.route("/bars/<symbol>")
-def get_crypto_bars(symbol):
-    timeframe = request.args.get("timeframe")
-
-    encoded_start = request.args.get("start")
-    start = urllib.parse.unquote(encoded_start)
+@router.get("/bars/{symbol}")
+async def get_crypto_bars(symbol, timeframe, start):
+    start = urllib.parse.unquote(start)
 
     alpaca_timeframe = None
     match timeframe:
@@ -50,8 +49,8 @@ def get_crypto_bars(symbol):
     return response
 
 
-@crypto_blueprint.route("/bars/latest")
-def get_latest_crypto_bars():
+@router.get("/bars/latest")
+async def get_latest_crypto_bars():
     result = rest.get_latest_crypto_bars(supported_tickers, "CBSE")
 
     response = {}
@@ -72,8 +71,8 @@ def get_latest_crypto_bars():
     return response
 
 
-@crypto_blueprint.route("/trades/latest")
-def get_latest_crypto_trades():
+@router.get("/trades/latest")
+async def get_latest_crypto_trades():
     result = rest.get_latest_crypto_trades(supported_tickers, "CBSE")
 
     response = {}
@@ -89,8 +88,8 @@ def get_latest_crypto_trades():
     return response
 
 
-@crypto_blueprint.route("/account")
-def get_account():
+@router.get("/account")
+async def get_account():
     result = rest.get_account()
 
     response = {
@@ -103,8 +102,8 @@ def get_account():
     return response
 
 
-@crypto_blueprint.route("/positions")
-def get_positions():
+@router.get("/positions")
+async def get_positions():
     result = rest.list_positions()
 
     response = []
@@ -122,8 +121,8 @@ def get_positions():
     return response
 
 
-@crypto_blueprint.route("/activities")
-def get_activities():
+@router.get("/activities")
+async def get_activities():
     result = rest.get_activities()
 
     response = []
@@ -144,12 +143,9 @@ def get_activities():
     return response
 
 
-@crypto_blueprint.route("/portfolio-history")
-def get_portfolio_history():
-    timeframe = request.args.get("timeframe")
-
-    encoded_start = request.args.get("start")
-    start = urllib.parse.unquote(encoded_start)
+@router.get("/portfolio-history")
+async def get_portfolio_history(timeframe, start):
+    start = urllib.parse.unquote(start)
     start = parse(start).strftime("%Y-%m-%d")
 
     alpaca_timeframe = None

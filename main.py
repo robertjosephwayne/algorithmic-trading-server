@@ -1,16 +1,27 @@
-from flask import Flask
-from flask_cors import CORS
-from flask_socketio import SocketIO
 from connectors.alpaca.websocket.client import AlpacaWebSocketClient
-from routes.crypto import crypto_blueprint
 from config import config
 from bot import process_bar
+from fastapi import FastAPI
+from fastapi_socketio import SocketManager
+from routes import crypto
+from fastapi.middleware.cors import CORSMiddleware
 
+app = FastAPI()
+app.include_router(crypto.router)
 
-app = Flask(__name__)
-app.register_blueprint(crypto_blueprint, url_prefix='/api/crypto')
-CORS(app)
-socketio = SocketIO(app=app, cors_allowed_origins="*")
+origins = [
+    config["CLIENT_URL"]
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+socket_manager = SocketManager(app=app, mount_location="/")
 
 
 async def handle_crypto_trade(trade):
@@ -18,7 +29,7 @@ async def handle_crypto_trade(trade):
         "symbol": trade.symbol,
         "price": trade.price
     }
-    socketio.emit('bar', trade)
+    await socket_manager.emit('bar', trade)
 
 
 alpaca = AlpacaWebSocketClient(
@@ -28,9 +39,6 @@ alpaca = AlpacaWebSocketClient(
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
 alpaca.subscribe_bars(["BTC/USD", "ETH/USD", "LTC/USD"], process_bar)
 alpaca.connect()
-
-if __name__ == '__main__':
-    socketio.run(app)
 
 
 
