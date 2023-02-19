@@ -28,7 +28,7 @@ async def handle_crypto_trade(trade):
 
 
 alpaca = AlpacaWebSocketClient(
-    api_key=config["ALPACA"]["API_KEY"], api_secret=config["ALPACA"]["SECRET_KEY"]
+    api_key=config["ALPACA"]["LIVE"]["API_KEY"], api_secret=config["ALPACA"]["LIVE"]["SECRET_KEY"]
 )
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
 alpaca.subscribe_bars(["BTC/USD", "ETH/USD", "LTC/USD"], process_bar)
