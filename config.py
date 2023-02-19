@@ -13,9 +13,7 @@ config = {
         "PAPER": {
             "API_KEY": os.environ.get("ALPACA_PAPER_API_KEY"),
             "SECRET_KEY": os.environ.get("ALPACA_PAPER_API_SECRET"),
-        }
+        },
     },
     "CLIENT_URL": os.environ.get("CLIENT_URL"),
 }
-
-

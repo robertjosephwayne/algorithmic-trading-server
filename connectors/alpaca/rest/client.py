@@ -11,8 +11,4 @@ if config["ALPACA"]["ENABLE_LIVE_TRADING"]:
     api_key = config["ALPACA"]["LIVE"]["API_KEY"]
     secret_key = config["ALPACA"]["LIVE"]["SECRET_KEY"]
 
-alpaca_rest_client = REST(
-    key_id=api_key,
-    secret_key=secret_key,
-    base_url=base_url,
-)
+alpaca_rest_client = REST(key_id=api_key, secret_key=secret_key, base_url=base_url,)
