@@ -24,4 +24,3 @@ socket_manager = SocketManager(app=app, mount_location="/")
 alpaca = AlpacaWebSocketClient()
 alpaca.subscribe_bars(["BTC/USD"], process_bar)
 alpaca.connect()
-    

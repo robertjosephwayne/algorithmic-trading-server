@@ -13,6 +13,7 @@ if config["ALPACA"]["ENABLE_LIVE_TRADING"]:
     api_key = config["ALPACA"]["LIVE"]["API_KEY"]
     secret_key = config["ALPACA"]["LIVE"]["SECRET_KEY"]
 
+
 class AlpacaWebSocketClient:
     _base_url = base_url
 

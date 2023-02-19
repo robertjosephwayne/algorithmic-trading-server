@@ -4,24 +4,22 @@ from config import config
 API_KEY = config["ALPACA"]["LIVE"]["API_KEY"]
 SECRET_KEY = config["ALPACA"]["LIVE"]["SECRET_KEY"]
 
-symbol = 'BTC/USD'
-start = '2023-02-01 UTC'
-end = '1 hour ago UTC'
+symbol = "BTC/USD"
+start = "2023-02-01 UTC"
+end = "1 hour ago UTC"
 timeframe = "1 hour"
 client_type = "crypto"
 
 vbt.AlpacaData.set_custom_settings(
-    client_type=client_type,
-    client_config=dict(
-        api_key=API_KEY,
-        secret_key=SECRET_KEY,
-    )
+    client_type=client_type, client_config=dict(api_key=API_KEY, secret_key=SECRET_KEY,)
 )
 
-alpaca_data = vbt.AlpacaData.fetch(symbols=symbol, start=start, end=end, timeframe=timeframe).get("Close")
+alpaca_data = vbt.AlpacaData.fetch(
+    symbols=symbol, start=start, end=end, timeframe=timeframe
+).get("Close")
 
-fast_ma = vbt.MA.run(alpaca_data, 12, short_name='fast')
-slow_ma = vbt.MA.run(alpaca_data, 24, short_name='slow')
+fast_ma = vbt.MA.run(alpaca_data, 12, short_name="fast")
+slow_ma = vbt.MA.run(alpaca_data, 24, short_name="slow")
 
 entries = fast_ma.ma_crossed_above(slow_ma)
 exits = fast_ma.ma_crossed_below(slow_ma)
