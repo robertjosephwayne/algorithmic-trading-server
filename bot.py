@@ -7,8 +7,8 @@ from alpaca_trade_api.rest import TimeFrame, URL, REST
 base_url = URL("https://paper-api.alpaca.markets")
 data_feed = "sip"
 rest = REST(
-    key_id=config["ALPACA"]["API_KEY"],
-    secret_key=config["ALPACA"]["SECRET_KEY"],
+    key_id=config["ALPACA"]["LIVE"]["API_KEY"],
+    secret_key=config["ALPACA"]["LIVE"]["SECRET_KEY"],
     base_url=base_url,
 )
 
