@@ -22,6 +22,7 @@ class AlpacaWebSocketClient:
         self._crypto_stream = CryptoDataStream(api_key=api_key, secret_key=secret_key)
 
     def _run_websocket(self):
+        print("Connecting to Alpaca websocket...")
         self._crypto_stream.run()
 
     def subscribe_trades(self, tickers, handler):
