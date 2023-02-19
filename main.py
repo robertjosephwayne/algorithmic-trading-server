@@ -21,15 +21,7 @@ app.add_middleware(
 
 socket_manager = SocketManager(app=app, mount_location="/")
 
-
-async def handle_crypto_trade(trade):
-    trade = {"symbol": trade.symbol, "price": trade.price}
-    await socket_manager.emit("bar", trade)
-
-
-if __name__ == "main":
-    alpaca = AlpacaWebSocketClient()
-    alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
-    alpaca.subscribe_bars(["BTC/USD"], process_bar)
-    alpaca.connect()
+alpaca = AlpacaWebSocketClient()
+alpaca.subscribe_bars(["BTC/USD"], process_bar)
+alpaca.connect()
     
