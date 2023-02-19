@@ -1,17 +1,13 @@
 from fastapi import APIRouter
 import urllib.parse
-from alpaca_trade_api.rest import TimeFrame, URL, REST, TimeFrameUnit
-from config import config
+from alpaca_trade_api.rest import TimeFrame, TimeFrameUnit
 from pyrfc3339 import parse
+from connectors.alpaca.rest.client import alpaca_rest_client
 
 router = APIRouter(
     prefix="/api/crypto"
 )
 
-base_url = URL("https://paper-api.alpaca.markets")
-data_feed = "sip"
-rest = REST(key_id=config["ALPACA"]["LIVE"]["API_KEY"], secret_key=config["ALPACA"]["LIVE"]["SECRET_KEY"],
-            base_url=base_url)
 supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD", "BCHUSD"]
 
 
@@ -32,7 +28,7 @@ async def get_crypto_bars(symbol, timeframe, start):
         case 'month':
             alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Month)
 
-    bars = rest.get_crypto_bars(symbol, alpaca_timeframe, start, limit=60, exchanges=['CBSE'])
+    bars = alpaca_rest_client.get_crypto_bars(symbol, alpaca_timeframe, start, limit=60, exchanges=['CBSE'])
 
     response = list()
 
@@ -52,7 +48,7 @@ async def get_crypto_bars(symbol, timeframe, start):
 
 @router.get("/bars/latest")
 async def get_latest_crypto_bars():
-    result = rest.get_latest_crypto_bars(supported_tickers, "CBSE")
+    result = alpaca_rest_client.get_latest_crypto_bars(supported_tickers, "CBSE")
 
     response = {}
 
@@ -74,7 +70,7 @@ async def get_latest_crypto_bars():
 
 @router.get("/trades/latest")
 async def get_latest_crypto_trades():
-    result = rest.get_latest_crypto_trades(supported_tickers, "CBSE")
+    result = alpaca_rest_client.get_latest_crypto_trades(supported_tickers, "CBSE")
 
     response = {}
 
@@ -91,7 +87,7 @@ async def get_latest_crypto_trades():
 
 @router.get("/account")
 async def get_account():
-    result = rest.get_account()
+    result = alpaca_rest_client.get_account()
 
     response = {
         "cash": result.cash,
@@ -105,7 +101,7 @@ async def get_account():
 
 @router.get("/positions")
 async def get_positions():
-    result = rest.list_positions()
+    result = alpaca_rest_client.list_positions()
 
     response = []
 
@@ -124,22 +120,23 @@ async def get_positions():
 
 @router.get("/activities")
 async def get_activities():
-    result = rest.get_activities()
+    result = alpaca_rest_client.get_activities()
 
     response = []
 
     for activity in result:
-        response.append({
-            "activity_type": activity.activity_type,
-            "cumulative_quantity": activity.cum_qty,
-            "order_status": activity.order_status,
-            "price": activity.price,
-            "quantity": activity.qty,
-            "side": activity.side,
-            "symbol": activity.symbol,
-            "transaction_time": activity.transaction_time,
-            "type": activity.type
-        })
+        if activity.activity_type == "FILL":
+            response.append({
+                "activity_type": activity.activity_type,
+                "cumulative_quantity": activity.cum_qty,
+                "order_status": activity.order_status,
+                "price": activity.price,
+                "quantity": activity.qty,
+                "side": activity.side,
+                "symbol": activity.symbol,
+                "transaction_time": activity.transaction_time,
+                "type": activity.type
+            })
 
     return response
 
@@ -162,7 +159,7 @@ async def get_portfolio_history(timeframe, start):
         case '1D':
             alpaca_timeframe = timeframe
 
-    result = rest.get_portfolio_history(date_start=start, timeframe=alpaca_timeframe)
+    result = alpaca_rest_client.get_portfolio_history(date_start=start, timeframe=alpaca_timeframe)
     response = []
 
     for i in range(len(result.equity)):
