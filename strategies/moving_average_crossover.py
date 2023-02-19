@@ -5,11 +5,11 @@ from connectors.alpaca.rest.client import alpaca_rest_client
 
 
 class MovingAverageCrossoverStrategy:
-    def __init__(self, sma_fast_minutes, sma_slow_minutes, usd_per_trade):
+    def __init__(self, sma_fast_minutes, sma_slow_minutes, max_allocation):
         super().__init__()
         self._sma_fast_minutes = sma_fast_minutes
         self._sma_slow_minutes = sma_slow_minutes
-        self._usd_per_trade = usd_per_trade
+        self._max_allocation = max_allocation
 
     @staticmethod
     def _get_position(symbol):
@@ -27,6 +27,15 @@ class MovingAverageCrossoverStrategy:
     def _get_signal(fast, slow):
         print(f"Fast {fast[-1]} / Slow: {slow[-1]}")
         return fast[-1] > slow[-1]
+
+    @staticmethod
+    def _get_effective_buying_power():
+        account = alpaca_rest_client.get_account()
+        return float(account.effective_buying_power)
+
+    def _get_max_position(self):
+        effective_buying_power = self._get_effective_buying_power()
+        return max(self._max_allocation, effective_buying_power)
 
     def _get_bars(self, symbol):
         print(f"Bar Received: {symbol}")
@@ -57,13 +66,15 @@ class MovingAverageCrossoverStrategy:
         position = self._get_position(symbol=symbol)
         should_buy = self._get_signal(bars.sma_fast, bars.sma_slow)
 
+        max_position = self._get_max_position()
+
         if position == 0 and should_buy == True:
             print(
-                f"Symbol: {symbol} / Side: BUY / Notional Amount: {self._usd_per_trade}"
+                f"Symbol: {symbol} / Side: BUY / Notional Amount: {max_position}"
             )
             alpaca_rest_client.submit_order(
                 symbol=symbol,
-                notional=self._usd_per_trade,
+                notional=max_position,
                 side="buy",
                 time_in_force="gtc",
             )
