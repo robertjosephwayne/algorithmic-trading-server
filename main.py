@@ -31,4 +31,7 @@ alpaca = AlpacaWebSocketClient()
 
 alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
 alpaca.subscribe_bars(["BTC/USD"], process_bar)
-alpaca.connect()
+
+if __name__ == "main":
+    alpaca.connect()
+    
