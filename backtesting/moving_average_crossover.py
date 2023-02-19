@@ -1,11 +1,16 @@
+import sys
+import os
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
 import vectorbtpro as vbt
 from config import config
 
 API_KEY = config["ALPACA"]["LIVE"]["API_KEY"]
 SECRET_KEY = config["ALPACA"]["LIVE"]["SECRET_KEY"]
 
-symbol = "BTC/USD"
-start = "2023-02-01 UTC"
+symbol = "ETH/USD"
+start = "2022-01-01 UTC"
 end = "1 hour ago UTC"
 timeframe = "1 hour"
 client_type = "crypto"
@@ -25,8 +30,10 @@ entries = fast_ma.ma_crossed_above(slow_ma)
 exits = fast_ma.ma_crossed_below(slow_ma)
 
 pf = vbt.Portfolio.from_signals(alpaca_data, entries, exits)
+pf.plot().show()
 
 total_return = pf.get_total_return()
 print("Total Return: ", total_return)
 
 market_return = pf.get_total_market_return()
+print(market_return)
