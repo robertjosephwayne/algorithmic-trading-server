@@ -27,11 +27,9 @@ async def handle_crypto_trade(trade):
     await socket_manager.emit("bar", trade)
 
 
-alpaca = AlpacaWebSocketClient()
-
-alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
-alpaca.subscribe_bars(["BTC/USD"], process_bar)
-
 if __name__ == "main":
+    alpaca = AlpacaWebSocketClient()
+    alpaca.subscribe_trades(["BTC/USD", "ETH/USD", "LTC/USD"], handle_crypto_trade)
+    alpaca.subscribe_bars(["BTC/USD"], process_bar)
     alpaca.connect()
     
