@@ -66,7 +66,7 @@ class MovingAverageCrossoverStrategy:
 
         max_position = self._get_max_position()
 
-        if position == 0 and should_buy == True:
+        if position < max_position and should_buy == True:
             print(
                 f"Symbol: {symbol} / Side: BUY / Notional Amount: {max_position}"
             )
