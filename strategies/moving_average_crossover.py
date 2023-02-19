@@ -1,13 +1,14 @@
+import math
 from datetime import datetime, timedelta
 from alpaca_trade_api.rest import TimeFrame
 from connectors.alpaca.rest.client import alpaca_rest_client
 
 
 class MovingAverageCrossoverStrategy:
-    def __init__(self, sma_fast, sma_slow, usd_per_trade):
+    def __init__(self, sma_fast_minutes, sma_slow_minutes, usd_per_trade):
         super().__init__()
-        self._sma_fast = sma_fast
-        self._sma_slow = sma_slow
+        self._sma_fast_minutes = sma_fast_minutes
+        self._sma_slow_minutes = sma_slow_minutes
         self._usd_per_trade = usd_per_trade
 
     @staticmethod
@@ -31,13 +32,21 @@ class MovingAverageCrossoverStrategy:
         print(f"Bar Received: {symbol}")
 
         now = datetime.now()
-        delta = timedelta(days=2)
+
+        sma_slow_days = math.ceil(self._sma_slow_minutes / (24 * 60))
+        delta = timedelta(days=sma_slow_days)
+
         start = now - delta
 
-        bars = alpaca_rest_client.get_crypto_bars(symbol, TimeFrame.Minute, exchanges=["CBSE"], start=start.strftime("%Y-%m-%d")).df
+        bars = alpaca_rest_client.get_crypto_bars(
+            symbol,
+            TimeFrame.Minute,
+            exchanges=["CBSE"],
+            start=start.strftime("%Y-%m-%d"),
+        ).df
 
-        bars[f"sma_fast"] = self._get_sma(bars.close, self._sma_fast)
-        bars[f"sma_slow"] = self._get_sma(bars.close, self._sma_slow)
+        bars[f"sma_fast"] = self._get_sma(bars.close, self._sma_fast_minutes)
+        bars[f"sma_slow"] = self._get_sma(bars.close, self._sma_slow_minutes)
         return bars
 
     async def process_bar(self, bar):
@@ -49,10 +58,17 @@ class MovingAverageCrossoverStrategy:
         should_buy = self._get_signal(bars.sma_fast, bars.sma_slow)
 
         if position == 0 and should_buy == True:
-            print(f"Symbol: {symbol} / Side: BUY / Notional Amount: {self._usd_per_trade}")
+            print(
+                f"Symbol: {symbol} / Side: BUY / Notional Amount: {self._usd_per_trade}"
+            )
             alpaca_rest_client.submit_order(
-                symbol=symbol, notional=self._usd_per_trade, side="buy", time_in_force="gtc"
+                symbol=symbol,
+                notional=self._usd_per_trade,
+                side="buy",
+                time_in_force="gtc",
             )
         elif position > 0 and should_buy == False:
             print(f"Symbol: {symbol} / Side: SELL / Quantity: {position}")
-            alpaca_rest_client.submit_order(symbol=symbol, qty=position, side="sell", time_in_force="gtc")
+            alpaca_rest_client.submit_order(
+                symbol=symbol, qty=position, side="sell", time_in_force="gtc"
+            )
