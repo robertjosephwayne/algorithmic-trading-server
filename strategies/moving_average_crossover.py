@@ -35,7 +35,7 @@ class MovingAverageCrossoverStrategy:
 
     def _get_max_position(self):
         effective_buying_power = self._get_effective_buying_power()
-        return max(self._max_allocation, effective_buying_power)
+        return math.floor(min(self._max_allocation, effective_buying_power))
 
     def _get_bars(self, symbol):
         print(f"Bar Received: {symbol}")
@@ -43,8 +43,7 @@ class MovingAverageCrossoverStrategy:
         now = datetime.now()
 
         sma_slow_days = math.ceil(self._sma_slow_minutes / (24 * 60))
-        delta = timedelta(days=sma_slow_days)
-
+        delta = timedelta(days=sma_slow_days + 1)
         start = now - delta
 
         bars = alpaca_rest_client.get_crypto_bars(
@@ -62,7 +61,6 @@ class MovingAverageCrossoverStrategy:
         symbol = bar.symbol.replace("/", "")
 
         bars = self._get_bars(symbol=symbol)
-
         position = self._get_position(symbol=symbol)
         should_buy = self._get_signal(bars.sma_fast, bars.sma_slow)
 
