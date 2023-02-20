@@ -36,4 +36,4 @@ total_return = pf.get_total_return()
 print("Total Return: ", total_return)
 
 market_return = pf.get_total_market_return()
-print(market_return)
+print("Market Return: ", market_return)
