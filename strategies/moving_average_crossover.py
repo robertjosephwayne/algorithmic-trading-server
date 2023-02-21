@@ -5,10 +5,10 @@ from connectors.alpaca.rest.client import alpaca_rest_client
 
 
 class MovingAverageCrossoverStrategy:
-    def __init__(self, sma_fast_minutes, sma_slow_minutes, max_allocation):
+    def __init__(self, sma_fast_hours, sma_slow_hours, max_allocation):
         super().__init__()
-        self._sma_fast_minutes = sma_fast_minutes
-        self._sma_slow_minutes = sma_slow_minutes
+        self._sma_fast_hours = sma_fast_hours
+        self._sma_slow_hours = sma_slow_hours
         self._max_allocation = max_allocation
 
     @staticmethod
@@ -42,19 +42,19 @@ class MovingAverageCrossoverStrategy:
 
         now = datetime.now()
 
-        sma_slow_days = math.ceil(self._sma_slow_minutes / (24 * 60))
+        sma_slow_days = math.ceil(self._sma_slow_hours / 24)
         delta = timedelta(days=sma_slow_days + 1)
         start = now - delta
 
         bars = alpaca_rest_client.get_crypto_bars(
             symbol,
-            TimeFrame.Minute,
+            TimeFrame.Hour,
             exchanges=["CBSE"],
             start=start.strftime("%Y-%m-%d"),
         ).df
 
-        bars[f"sma_fast"] = self._get_sma(bars.close, self._sma_fast_minutes)
-        bars[f"sma_slow"] = self._get_sma(bars.close, self._sma_slow_minutes)
+        bars[f"sma_fast"] = self._get_sma(bars.close, self._sma_fast_hours)
+        bars[f"sma_slow"] = self._get_sma(bars.close, self._sma_slow_hours)
         return bars
 
     async def process_bar(self, bar):
