@@ -29,13 +29,13 @@ class MovingAverageCrossoverStrategy:
         return fast[-1] > slow[-1]
 
     @staticmethod
-    def _get_effective_buying_power():
+    def _get_non_marginable_buying_power():
         account = alpaca_rest_client.get_account()
-        return float(account.effective_buying_power)
+        return float(account.non_marginable_buying_power)
 
     def _get_max_position(self):
-        effective_buying_power = self._get_effective_buying_power()
-        return math.floor(min(self._max_allocation, effective_buying_power))
+        non_marginable_buying_power = self._get_non_marginable_buying_power()
+        return math.floor(min(self._max_allocation, non_marginable_buying_power))
 
     def _get_bars(self, symbol):
         print(f"Bar Received: {symbol}")
