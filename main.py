@@ -1,6 +1,6 @@
 from connectors.alpaca.websocket.client import AlpacaWebSocketClient
 from config import config
-from bot import process_bar
+from bot import Bot
 from fastapi import FastAPI
 from fastapi_socketio import SocketManager
 from routes import crypto
@@ -20,7 +20,8 @@ app.add_middleware(
 )
 
 socket_manager = SocketManager(app=app, mount_location="/")
+bot = Bot(max_allocation=5000)
 
 alpaca = AlpacaWebSocketClient()
-alpaca.subscribe_bars(["BTC/USD"], process_bar)
+alpaca.subscribe_bars(["BTC/USD"], bot.process_bar)
 alpaca.connect()
