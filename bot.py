@@ -41,7 +41,7 @@ class Bot:
         print(f"Max position: {max_position}")
         print(f"Signal: {signal}")
 
-        if position < max_position and signal:
+        if position == 0 and signal:
             print(
                 f"Symbol: {symbol} / Side: BUY / Notional Amount: {max_position}"
             )
