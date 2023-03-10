@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 socket_manager = SocketManager(app=app, mount_location="/")
-bot = Bot(max_allocation=5000)
+bot = Bot(max_allocation=1000)
 
 alpaca = AlpacaWebSocketClient()
 alpaca.subscribe_bars(["BTC/USD"], bot.process_bar)
