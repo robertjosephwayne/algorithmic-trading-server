@@ -141,6 +141,30 @@ async def get_activities():
     return response
 
 
+@router.get("/orders")
+async def get_orders():
+    result = alpaca_rest_client.list_orders()
+
+    response = []
+
+    for order in result:
+        response.append({
+            "symbol": order.symbol,
+            "quantity": order.qty,
+            "filled_quantity": order.filled_qty,
+            "side": order.side,
+            "type": order.type,
+            "time_in_force": order.time_in_force,
+            "limit_price": order.limit_price,
+            "stop_price": order.stop_price,
+            "notional": order.notional,
+            "trail_percent": order.trail_percent,
+            "trail_price": order.trail_price
+        })
+
+    return response
+
+
 @router.get("/portfolio-history")
 async def get_portfolio_history(timeframe, start):
     start = urllib.parse.unquote(start)
