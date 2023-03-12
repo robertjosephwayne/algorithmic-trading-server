@@ -30,7 +30,9 @@ class Bot:
         non_marginable_buying_power = self._get_non_marginable_buying_power()
         return math.floor(min(self._max_allocation, non_marginable_buying_power))
 
-    async def process_bar(self, bar):
+    async def process_crypto_bar(self, bar):
+        print("Processing crypto bar...")
+
         signal = await moving_average_crossover.process_bar(bar)
         symbol = bar.symbol.replace("/", "")
 
@@ -56,3 +58,70 @@ class Bot:
             alpaca_rest_client.submit_order(
                 symbol=symbol, qty=position, side="sell", time_in_force="gtc"
             )
+
+    async def process_stock_bar(self, bar):
+        print("Processing stock bar...")
+
+        positions = alpaca_rest_client.list_positions()
+        activities = alpaca_rest_client.get_activities(activity_types="FILL", direction="desc")
+
+        for position in positions:
+            if position.side == "short":
+                # Submit stop loss orders
+
+                stop_percent = 10
+
+                stop_price = float(position.avg_entry_price) * (1 + stop_percent / 100)
+                current_price = float(position.current_price)
+
+                if current_price >= stop_price:
+                    print(f"Submitting stop loss order for {position.symbol}")
+
+                    alpaca_rest_client.submit_order(
+                        symbol=position.symbol,
+                        qty=-int(position.qty),
+                        side="buy",
+                        type="market",
+                        time_in_force="day"
+                    )
+
+                # Submit take profit orders
+
+                short_sell_activities = filter(lambda activity:
+                                        activity.symbol == position.symbol
+                                        and activity.side == "sell_short",
+                                        activities)
+                short_sell_activities = list(short_sell_activities)
+
+                buy_activities = filter(lambda activity:
+                                        activity.symbol == position.symbol
+                                        and activity.side == "buy",
+                                        activities)
+                buy_activities = list(buy_activities)
+
+                last_short_sell_activity = short_sell_activities[0]
+                last_buy_activity = None
+                if len(buy_activities):
+                    last_buy_activity = buy_activities[0]
+
+                already_placed_take_profit_order = False
+
+                if last_buy_activity and last_buy_activity.transaction_time > last_short_sell_activity.transaction_time:
+                    already_placed_take_profit_order = True
+
+                if already_placed_take_profit_order:
+                    return
+
+                # If current price has reached 1.1R, exit 91% of position
+                elif current_price <= float(position.avg_entry_price) * (1 - (stop_percent * 1.1) / 100):
+                    print(f"Submitting take profit order for {position.symbol}")
+                    exit_quantity = -int(position.qty) * .91
+                    exit_quantity = round(exit_quantity, 2)
+
+                    alpaca_rest_client.submit_order(
+                        symbol=position.symbol,
+                        qty=exit_quantity,
+                        side="buy",
+                        type="market",
+                        time_in_force="day"
+                    )
