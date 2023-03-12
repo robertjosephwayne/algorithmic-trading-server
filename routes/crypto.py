@@ -101,18 +101,27 @@ async def get_account():
 
 @router.get("/positions")
 async def get_positions():
-    result = alpaca_rest_client.list_positions()
+    positions = alpaca_rest_client.list_positions()
+
+    orders = alpaca_rest_client.list_orders()
+    stop_loss_orders = filter(lambda order: "stop" in order.type, orders)
+    stop_loss_orders = list(stop_loss_orders)
 
     response = []
 
-    for asset in result:
+    for position in positions:
+        stop_loss_order = next((order for order in stop_loss_orders if position.symbol == order.symbol), None)
+
         response.append({
-            "symbol": asset.symbol,
-            "quantity": asset.qty,
-            "side": asset.side,
-            "exchange": asset.exchange,
-            "cost_basis": asset.cost_basis,
-            "market_value": asset.market_value,
+            "symbol": position.symbol,
+            "quantity": position.qty,
+            "side": position.side,
+            "exchange": position.exchange,
+            "cost_basis": position.cost_basis,
+            "market_value": position.market_value,
+            "average_entry_price": position.avg_entry_price,
+            "current_price": position.current_price,
+            "stop_price": stop_loss_order.stop_price if stop_loss_order else None
         })
 
     return response
@@ -203,7 +212,6 @@ async def place_stop_orders():
 
     for position in positions:
         if position.side == "short":
-            print(position.symbol)
 
             alpaca_rest_client.submit_order(
                 symbol=position.symbol,
