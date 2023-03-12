@@ -193,3 +193,23 @@ async def get_portfolio_history(timeframe, start):
         })
 
     return response
+
+
+@router.post("/stop")
+async def place_stop_orders():
+    return
+
+    positions = alpaca_rest_client.list_positions()
+
+    for position in positions:
+        if position.side == "short":
+            print(position.symbol)
+
+            alpaca_rest_client.submit_order(
+                symbol=position.symbol,
+                qty=-int(position.qty),
+                side="buy",
+                type="trailing_stop",
+                time_in_force="gtc",
+                trail_percent="10"
+            )
