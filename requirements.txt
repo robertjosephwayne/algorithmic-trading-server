@@ -53,3 +53,5 @@ watchfiles==0.18.1
 websocket-client==1.5.1
 websockets==10.4
 yarl==1.8.2
+rfc3339~=6.2
+vectorbtpro~=1.10.2

@@ -1,6 +1,8 @@
 import math
 from connectors.alpaca.rest.client import alpaca_rest_client
 from strategies.moving_average_crossover import MovingAverageCrossoverStrategy
+from datetime import datetime
+from rfc3339 import rfc3339
 
 moving_average_crossover = MovingAverageCrossoverStrategy(
     sma_fast_hours=79, sma_slow_hours=143
@@ -65,32 +67,33 @@ class Bot:
         positions = alpaca_rest_client.list_positions()
         activities = alpaca_rest_client.get_activities(activity_types="FILL", direction="desc")
 
+        trading_start = datetime(2023, 3, 1, 0, 0)
+
+        etf_historical_prices = {}
+        etf_tickers = ['SPY', 'QQQ']
+        for etf_ticker in etf_tickers:
+            prices = alpaca_rest_client.get_bars(etf_ticker, start=rfc3339(trading_start), timeframe="1Min")
+            etf_historical_prices[etf_ticker] = prices
+
+        etf_latest_price = {}
+        for etf_ticker in etf_tickers:
+            latest_price = alpaca_rest_client.get_latest_bar(etf_ticker)
+            etf_latest_price[etf_ticker] = latest_price.c
+
         for position in positions:
             if position.side == "short":
-                # Submit stop loss orders
-
                 stop_percent = 10
 
                 stop_price = float(position.avg_entry_price) * (1 + stop_percent / 100)
-                current_price = float(position.current_price)
-
-                if current_price >= stop_price:
-                    print(f"Submitting stop loss order for {position.symbol}")
-
-                    alpaca_rest_client.submit_order(
-                        symbol=position.symbol,
-                        qty=-int(position.qty),
-                        side="buy",
-                        type="market",
-                        time_in_force="day"
-                    )
+                position_current_price = float(position.current_price)
+                position_average_entry_price = float(position.avg_entry_price)
 
                 # Submit take profit orders
 
                 short_sell_activities = filter(lambda activity:
-                                        activity.symbol == position.symbol
-                                        and activity.side == "sell_short",
-                                        activities)
+                                               activity.symbol == position.symbol
+                                               and activity.side == "sell_short",
+                                               activities)
                 short_sell_activities = list(short_sell_activities)
 
                 buy_activities = filter(lambda activity:
@@ -112,8 +115,35 @@ class Bot:
                 if already_placed_take_profit_order:
                     return
 
+                if position.exchange == 'NASDAQ':
+                    etf = 'QQQ'
+                elif position.exchange == 'NYSE':
+                    etf = 'SPY'
+
+                etf_average_entry_price = None
+                transaction_time = last_short_sell_activity.transaction_time.strftime('%Y-%m-%d %H:%MZ')
+                for bar in etf_historical_prices[etf]:
+                    bar_time_utc = bar.t.tz_convert(tz='UTC').strftime('%Y-%m-%d %H:%MZ')
+
+                    if bar_time_utc == transaction_time:
+                        etf_average_entry_price = float(bar.c)
+                        break
+
+                if not etf_average_entry_price:
+                    print(
+                        f'Unable to find ETF entry price for {etf} at {transaction_time}. This is related to {position.symbol}.')
+                    return
+
+                ratio_average_entry = (position_average_entry_price / etf_average_entry_price) * 100
+                ratio_today = (position_current_price / etf_latest_price[etf] * 100)
+                ratio_percent_change = (ratio_today / ratio_average_entry - 1) * 100
+
+                print(f'Ratio change for {position.symbol}: {ratio_percent_change}')
+
+                take_profit_ratio_percent_change = stop_percent * 1.1
+
                 # If current price has reached 1.1R, exit 91% of position
-                elif current_price <= float(position.avg_entry_price) * (1 - (stop_percent * 1.1) / 100):
+                if ratio_percent_change <= -take_profit_ratio_percent_change:
                     print(f"Submitting take profit order for {position.symbol}")
                     exit_quantity = -int(position.qty) * .91
                     exit_quantity = round(exit_quantity, 2)
@@ -121,6 +151,18 @@ class Bot:
                     alpaca_rest_client.submit_order(
                         symbol=position.symbol,
                         qty=exit_quantity,
+                        side="buy",
+                        type="market",
+                        time_in_force="day"
+                    )
+
+                # Submit stop loss orders
+                if ratio_percent_change >= stop_percent:
+                    print(f"Submitting stop loss order for {position.symbol}")
+
+                    alpaca_rest_client.submit_order(
+                        symbol=position.symbol,
+                        qty=-int(position.qty),
                         side="buy",
                         type="market",
                         time_in_force="day"
