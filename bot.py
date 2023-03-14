@@ -84,7 +84,6 @@ class Bot:
             if position.side == "short":
                 stop_percent = 10
 
-                stop_price = float(position.avg_entry_price) * (1 + stop_percent / 100)
                 position_current_price = float(position.current_price)
                 position_average_entry_price = float(position.avg_entry_price)
 
