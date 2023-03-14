@@ -32,6 +32,10 @@ class Bot:
         non_marginable_buying_power = self._get_non_marginable_buying_power()
         return math.floor(min(self._max_allocation, non_marginable_buying_power))
 
+    async def process_bar(self, bar):
+        await self.process_crypto_bar(bar)
+        await self.process_stock_bar(bar)
+
     async def process_crypto_bar(self, bar):
         print("Processing crypto bar...")
 
@@ -84,7 +88,6 @@ class Bot:
             if position.side == "short":
                 stop_percent = 10
 
-                stop_price = float(position.avg_entry_price) * (1 + stop_percent / 100)
                 position_current_price = float(position.current_price)
                 position_average_entry_price = float(position.avg_entry_price)
 

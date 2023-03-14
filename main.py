@@ -23,6 +23,5 @@ socket_manager = SocketManager(app=app, mount_location="/")
 bot = Bot(max_allocation=1000)
 
 alpaca = AlpacaWebSocketClient()
-alpaca.subscribe_bars("crypto", ["BTC/USD"], bot.process_crypto_bar)
-alpaca.subscribe_bars("crypto", ["BTC/USD"], bot.process_stock_bar)
+alpaca.subscribe_bars("crypto", ["BTC/USD"], bot.process_bar)
 alpaca.connect()
