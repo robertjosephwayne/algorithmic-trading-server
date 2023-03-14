@@ -24,5 +24,4 @@ bot = Bot(max_allocation=1000)
 
 alpaca = AlpacaWebSocketClient()
 alpaca.subscribe_bars("crypto", ["BTC/USD"], bot.process_bar)
-# alpaca.subscribe_bars("stock", ["AAPL"], bot.process_stock_bar)
 alpaca.connect()
