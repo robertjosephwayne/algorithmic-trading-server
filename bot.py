@@ -32,6 +32,10 @@ class Bot:
         non_marginable_buying_power = self._get_non_marginable_buying_power()
         return math.floor(min(self._max_allocation, non_marginable_buying_power))
 
+    async def process_bar(self, bar):
+        await self.process_crypto_bar(bar)
+        await self.process_stock_bar(bar)
+
     async def process_crypto_bar(self, bar):
         print("Processing crypto bar...")
 
