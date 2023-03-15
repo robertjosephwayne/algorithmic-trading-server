@@ -121,7 +121,12 @@ async def get_positions():
             "market_value": position.market_value,
             "average_entry_price": position.avg_entry_price,
             "current_price": position.current_price,
-            "stop_price": stop_loss_order.stop_price if stop_loss_order else None
+            "stop_price": stop_loss_order.stop_price if stop_loss_order else None,
+            "change_today": position.change_today,
+            "intraday_unrealized_pl": position.unrealized_intraday_pl,
+            "intraday_unrealized_pl_percent": position.unrealized_intraday_plpc,
+            "total_unrealized_pl": position.unrealized_pl,
+            "total_unrealized_pl_percent": position.unrealized_plpc
         })
 
     return response
