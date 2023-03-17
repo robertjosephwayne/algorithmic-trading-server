@@ -116,7 +116,7 @@ class Bot:
                     already_placed_take_profit_order = True
 
                 if already_placed_take_profit_order:
-                    return
+                    continue
 
                 if position.exchange == 'NASDAQ':
                     etf = 'QQQ'
@@ -150,6 +150,7 @@ class Bot:
                     print(f"Submitting take profit order for {position.symbol}")
                     exit_quantity = -int(position.qty) * .91
                     exit_quantity = round(exit_quantity, 2)
+                    exit_notional_value = exit_quantity * position_current_price
 
                     alpaca_rest_client.submit_order(
                         symbol=position.symbol,
@@ -159,14 +160,34 @@ class Bot:
                         time_in_force="day"
                     )
 
+                    print(f"Submitting sell order for {etf}. Notional value: {exit_notional_value}")
+                    alpaca_rest_client.submit_order(
+                        symbol=etf,
+                        notional=exit_notional_value,
+                        side="sell",
+                        type="market",
+                        time_in_force="day"
+                    )
+
                 # Submit stop loss orders
                 if ratio_percent_change >= stop_percent:
                     print(f"Submitting stop loss order for {position.symbol}")
+                    exit_quantity = -int(position.qty)
+                    exit_notional_value = exit_quantity * position_current_price
 
                     alpaca_rest_client.submit_order(
                         symbol=position.symbol,
                         qty=-int(position.qty),
                         side="buy",
+                        type="market",
+                        time_in_force="day"
+                    )
+
+                    print(f"Submitting sell order for {etf}. Notional value: {exit_notional_value}")
+                    alpaca_rest_client.submit_order(
+                        symbol=etf,
+                        notional=exit_notional_value,
+                        side="sell",
                         type="market",
                         time_in_force="day"
                     )
