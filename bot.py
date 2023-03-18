@@ -152,12 +152,12 @@ class Bot:
 
                 if should_place_stop_loss_order:
                     print(f"Submitting stop loss order for {position.symbol}")
-                    exit_quantity = -int(position.qty)
+                    exit_quantity = -float(position.qty)
                     exit_notional_value = exit_quantity * position_current_price
 
                     alpaca_rest_client.submit_order(
                         symbol=position.symbol,
-                        qty=-int(position.qty),
+                        qty=-float(position.qty),
                         side="buy",
                         type="market",
                         time_in_force="day"
@@ -179,7 +179,7 @@ class Bot:
                 # If current price has reached 1.5R, exit 67% of position
                 if ratio_percent_change <= -take_profit_ratio_percent_change:
                     print(f"Submitting take profit order for {position.symbol}")
-                    exit_quantity = -int(position.qty) * .67
+                    exit_quantity = -float(position.qty) * .67
                     exit_quantity = round(exit_quantity, 2)
                     exit_notional_value = exit_quantity * position_current_price
 
