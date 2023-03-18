@@ -3,11 +3,12 @@ from config import config
 from bot import Bot
 from fastapi import FastAPI
 from fastapi_socketio import SocketManager
-from routes import crypto
+from routes import crypto, trades
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 app.include_router(crypto.router)
+app.include_router(trades.router)
 
 origins = [config["CLIENT_URL"]]
 
