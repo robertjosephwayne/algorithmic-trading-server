@@ -3,7 +3,8 @@ from models.market import Market
 import urllib.parse
 
 router = APIRouter(
-    prefix="/api/market"
+    prefix="/api/market",
+    tags=["market"]
 )
 
 

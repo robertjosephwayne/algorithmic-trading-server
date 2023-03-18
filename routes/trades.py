@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from models.trade import Trade
 
 router = APIRouter(
-    prefix="/api/trades"
+    prefix="/api/trades",
+    tags=["trades"]
 )
 
 

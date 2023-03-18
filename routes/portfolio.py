@@ -3,7 +3,8 @@ from models.portfolio import Portfolio
 from connectors.alpaca.rest.client import alpaca_rest_client
 
 router = APIRouter(
-    prefix="/api/portfolio"
+    prefix="/api/portfolio",
+    tags=["portfolio"]
 )
 
 
@@ -35,3 +36,9 @@ async def get_orders():
 async def get_history():
     history = await Portfolio.get_history()
     return history
+
+
+@router.get("/metrics")
+async def get_metrics():
+    metrics = await Portfolio.get_metrics()
+    return metrics

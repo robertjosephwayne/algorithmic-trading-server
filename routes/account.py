@@ -2,7 +2,8 @@ from fastapi import APIRouter
 from models.account import Account
 
 router = APIRouter(
-    prefix="/api/account"
+    prefix="/api/account",
+    tags=["account"]
 )
 
 
