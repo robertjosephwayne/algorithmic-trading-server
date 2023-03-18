@@ -91,8 +91,6 @@ class Bot:
                 position_current_price = float(position.current_price)
                 position_average_entry_price = float(position.avg_entry_price)
 
-                # Submit take profit orders
-
                 short_sell_activities = filter(lambda activity:
                                                activity.symbol == position.symbol
                                                and activity.side == "sell_short",
@@ -174,10 +172,15 @@ class Bot:
 
                     continue
 
+                # Submit take profit orders
                 take_profit_ratio_percent_change = stop_percent * 1.5
 
+                should_place_take_profit_order = False
+                if ratio_percent_change <= -take_profit_ratio_percent_change and not already_placed_take_profit_order:
+                    should_place_take_profit_order = True
+
                 # If current price has reached 1.5R, exit 67% of position
-                if ratio_percent_change <= -take_profit_ratio_percent_change:
+                if should_place_take_profit_order:
                     print(f"Submitting take profit order for {position.symbol}")
                     exit_quantity = -float(position.qty) * .67
                     exit_quantity = round(exit_quantity, 2)
