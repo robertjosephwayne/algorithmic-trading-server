@@ -1,88 +1,9 @@
 from fastapi import APIRouter
-import urllib.parse
-from alpaca_trade_api.rest import TimeFrame, TimeFrameUnit
-from pyrfc3339 import parse
 from connectors.alpaca.rest.client import alpaca_rest_client
 
 router = APIRouter(
     prefix="/api/crypto"
 )
-
-supported_tickers = ["BTCUSD", "ETHUSD", "LTCUSD", "BCHUSD"]
-
-
-@router.get("/bars/{symbol}")
-async def get_crypto_bars(symbol, timeframe, start):
-    start = urllib.parse.unquote(start)
-
-    alpaca_timeframe = None
-    match timeframe:
-        case 'minute':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Minute)
-        case 'hour':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Hour)
-        case 'day':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Day)
-        case 'week':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Week)
-        case 'month':
-            alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Month)
-
-    bars = alpaca_rest_client.get_crypto_bars(symbol, alpaca_timeframe, start, limit=60, exchanges=['CBSE'])
-
-    response = list()
-
-    for bar in bars:
-        response.append({
-            "symbol": symbol,
-            "timestamp": bar.t,
-            "high": bar.h,
-            "low": bar.l,
-            "open": bar.o,
-            "close": bar.c,
-            "exchange": bar.x
-        })
-
-    return response
-
-
-@router.get("/bars/latest")
-async def get_latest_crypto_bars():
-    result = alpaca_rest_client.get_latest_crypto_bars(supported_tickers, "CBSE")
-
-    response = {}
-
-    for ticker in supported_tickers:
-        bar = result[ticker]
-        response[ticker] = {
-            "high": bar.h,
-            "low": bar.l,
-            "open": bar.o,
-            "close": bar.c,
-            "timestamp": bar.t,
-            "volume": bar.v,
-            "weighted_volume": bar.vw,
-            "exchange": bar.x
-        }
-
-    return response
-
-
-@router.get("/trades/latest")
-async def get_latest_crypto_trades():
-    result = alpaca_rest_client.get_latest_crypto_trades(supported_tickers, "CBSE")
-
-    response = {}
-
-    for ticker in supported_tickers:
-        trade = result[ticker]
-        response[ticker] = {
-            "price": trade.price,
-            "timestamp": trade.timestamp,
-            "exchange": trade.x
-        }
-
-    return response
 
 
 @router.get("/account")
@@ -113,6 +34,7 @@ async def get_positions():
         stop_loss_order = next((order for order in stop_loss_orders if position.symbol == order.symbol), None)
 
         response.append({
+            "asset_class": position.asset_class,
             "symbol": position.symbol,
             "quantity": position.qty,
             "side": position.side,
@@ -155,6 +77,25 @@ async def get_activities():
     return response
 
 
+@router.get("/deposits")
+async def get_deposits():
+    result = alpaca_rest_client.get_activities()
+
+    response = []
+
+    for activity in result:
+        if activity.activity_type == "OCT":
+            print(activity)
+            response.append({
+                "activity_type": activity.activity_type,
+                "date": activity.date,
+                "price": activity.price,
+                "quantity": activity.quantity
+            })
+
+    return response
+
+
 @router.get("/orders")
 async def get_orders():
     result = alpaca_rest_client.list_orders()
@@ -180,35 +121,38 @@ async def get_orders():
 
 
 @router.get("/portfolio-history")
-async def get_portfolio_history(timeframe, start):
-    start = urllib.parse.unquote(start)
-    start = parse(start).strftime("%Y-%m-%d")
+async def get_portfolio_history():
+    result = alpaca_rest_client.get_portfolio_history(date_start="2023-03-01", timeframe="1D")
 
-    alpaca_timeframe = None
-    match timeframe:
-        case '1M':
-            alpaca_timeframe = "1Min"
-        case '5M':
-            alpaca_timeframe = "5Min"
-        case '15M':
-            alpaca_timeframe = "15Min"
-        case '1H':
-            alpaca_timeframe = timeframe
-        case '1D':
-            alpaca_timeframe = timeframe
+    activities = alpaca_rest_client.get_activities()
+    daily_deposits = {}
 
-    result = alpaca_rest_client.get_portfolio_history(date_start=start, timeframe=alpaca_timeframe)
+    for activity in activities:
+        if activity.activity_type == "OCT":
+            price = float(activity.price)
+            quantity = float(activity.qty)
+            deposit_value = price * quantity
+
+            if activity.date not in daily_deposits.keys():
+                daily_deposits.update({activity.date: deposit_value})
+            else:
+                daily_deposits[activity.date] += deposit_value
+        elif activity.activity_type == "CSD":
+            deposit_value = float(activity.net_amount)
+            if activity.date not in daily_deposits.keys():
+                daily_deposits.update({activity.date: deposit_value})
+            else:
+                daily_deposits[activity.date] += deposit_value
+
+    print(daily_deposits)
     response = []
 
     for i in range(len(result.equity)):
         response.append({
             "timestamp": result.timestamp[i] * 1000,
-            "equity": result.equity[i]
+            "equity": result.equity[i],
+            "pl": result.profit_loss[i],
+            "pl_percent": result.profit_loss_pct[i]
         })
 
     return response
-
-
-
-
-
