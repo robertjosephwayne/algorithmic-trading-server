@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from connectors.alpaca.rest.client import alpaca_rest_client
 
 
@@ -99,10 +101,10 @@ class Portfolio:
 
     @staticmethod
     async def get_history():
-        result = alpaca_rest_client.get_portfolio_history(date_start="2023-03-01", timeframe="1D")
+        result = alpaca_rest_client.get_portfolio_history(date_start="2023-03-08", timeframe="1D")
 
         activities = alpaca_rest_client.get_activities()
-        daily_deposits = {}
+        daily_net_deposits = {}
 
         for activity in activities:
             if activity.activity_type == "OCT":
@@ -110,25 +112,59 @@ class Portfolio:
                 quantity = float(activity.qty)
                 deposit_value = price * quantity
 
-                if activity.date not in daily_deposits.keys():
-                    daily_deposits.update({activity.date: deposit_value})
+                if activity.date not in daily_net_deposits.keys():
+                    daily_net_deposits.update({activity.date: deposit_value})
                 else:
-                    daily_deposits[activity.date] += deposit_value
+                    daily_net_deposits[activity.date] += deposit_value
             elif activity.activity_type == "CSD":
                 deposit_value = float(activity.net_amount)
-                if activity.date not in daily_deposits.keys():
-                    daily_deposits.update({activity.date: deposit_value})
+                if activity.date not in daily_net_deposits.keys():
+                    daily_net_deposits.update({activity.date: deposit_value})
                 else:
-                    daily_deposits[activity.date] += deposit_value
+                    daily_net_deposits[activity.date] += deposit_value
+            elif activity.activity_type == "CSW":
+                withdrawal_value = -float(activity.net_amount)
+                if activity.date not in daily_net_deposits.keys():
+                    daily_net_deposits.update({activity.date: deposit_value})
+                else:
+                    daily_net_deposits[activity.date] += withdrawal_value
 
         formatted_history = []
-
+        cumulative_pl = 0
         for i in range(len(result.equity)):
+            daily_pl = 0
+
+            average_daily_pl_percent = 0
+
+            date = datetime.fromtimestamp(result.timestamp[i - 1])
+            formatted_date = date.strftime("%Y-%m-%d")
+            net_deposits = daily_net_deposits.get(formatted_date) or 0
+
+            if i > 0:
+                daily_pl = result.equity[i] - result.equity[i - 1] - net_deposits
+
+            daily_pl_percent = daily_pl / result.equity[i - 1]
+
+            base_equity = result.equity[0]
+            cumulative_pl += daily_pl
+            cumulative_pl_percent = cumulative_pl / base_equity
+
+            if i > 0:
+                average_daily_pl_percent = cumulative_pl_percent / i
+
+            trading_days_per_year = 252
+            annualized_pl_percent = (1 + average_daily_pl_percent) ** trading_days_per_year - 1
+
             formatted_history.append({
                 "timestamp": result.timestamp[i] * 1000,
                 "equity": result.equity[i],
-                "pl": result.profit_loss[i],
-                "pl_percent": result.profit_loss_pct[i]
+                "daily_pl": daily_pl,
+                "daily_pl_percent": daily_pl_percent,
+                "daily_net_deposits": net_deposits,
+                "cumulative_pl": cumulative_pl,
+                "cumulative_pl_percent": cumulative_pl_percent,
+                "average_daily_pl_percent": average_daily_pl_percent,
+                "annualized_pl_percent": annualized_pl_percent,
             })
 
         return formatted_history
