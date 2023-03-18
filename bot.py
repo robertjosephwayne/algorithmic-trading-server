@@ -143,8 +143,8 @@ class Bot:
                 # Submit stop loss orders
                 should_place_stop_loss_order = False
 
-                # If profit has already been taken, exit position when relative change is zero or lower
-                if already_placed_take_profit_order and ratio_percent_change <= 0:
+                # If profit has already been taken, exit position when relative change is zero or greater
+                if already_placed_take_profit_order and ratio_percent_change >= 0:
                     should_place_stop_loss_order = True
 
                 if ratio_percent_change >= stop_percent:
