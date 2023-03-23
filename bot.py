@@ -68,6 +68,11 @@ class Bot:
     async def process_stock_bar(self, bar):
         print("Processing stock bar...")
 
+        clock = alpaca_rest_client.get_clock()
+        if not clock.is_open:
+            print("Market is closed. Skipping...")
+            return
+
         positions = alpaca_rest_client.list_positions()
         activities = alpaca_rest_client.get_activities(activity_types="FILL", direction="desc")
 
