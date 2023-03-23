@@ -173,11 +173,18 @@ class Bot:
                     continue
 
                 # Submit take profit orders
+
+                open_orders = alpaca_rest_client.list_orders(status="open", symbols=[position.symbol])
+
                 take_profit_ratio_percent_change = stop_percent * 1.1
 
                 should_place_take_profit_order = False
                 if ratio_percent_change <= -take_profit_ratio_percent_change and not already_placed_take_profit_order:
                     should_place_take_profit_order = True
+
+                if len(open_orders):
+                    print(f"Open orders exist. Not placing take profit order for symbol: {position.symbol}.")
+                    should_place_take_profit_order = False
 
                 # If current price has reached 1.1R, exit 50% of position
                 if should_place_take_profit_order:
