@@ -173,16 +173,16 @@ class Bot:
                     continue
 
                 # Submit take profit orders
-                take_profit_ratio_percent_change = stop_percent * 1.5
+                take_profit_ratio_percent_change = stop_percent * 1.1
 
                 should_place_take_profit_order = False
                 if ratio_percent_change <= -take_profit_ratio_percent_change and not already_placed_take_profit_order:
                     should_place_take_profit_order = True
 
-                # If current price has reached 1.5R, exit 67% of position
+                # If current price has reached 1.1R, exit 50% of position
                 if should_place_take_profit_order:
                     print(f"Submitting take profit order for {position.symbol}")
-                    exit_quantity = -float(position.qty) * .67
+                    exit_quantity = -float(position.qty) * .5
                     exit_quantity = round(exit_quantity, 2)
                     exit_notional_value = exit_quantity * position_current_price
 
