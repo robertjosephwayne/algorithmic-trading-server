@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from fastapi_socketio import SocketManager
 from routes import account, market, portfolio, trades
 from fastapi.middleware.cors import CORSMiddleware
+import sentry_sdk
+
+sentry_sdk.init(dsn=config["SENTRY_DSN"], traces_sample_rate=1.0)
 
 app = FastAPI()
 app.include_router(account.router)
