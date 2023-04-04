@@ -18,6 +18,15 @@ config = {
             "ENDPOINT": "https://paper-api.alpaca.markets"
         },
     },
+    "TRADIER": {
+        "ENABLE_LIVE_TRADING": strtobool(os.environ.get("TRADIER_ENABLE_LIVE_TRADING")),
+        "LIVE": {
+            "ACCESS_TOKEN": os.environ.get("TRADIER_LIVE_ACCESS_TOKEN"),
+        },
+        "PAPER": {
+            "ACCESS_TOKEN": os.environ.get("TRADIER_PAPER_ACCESS_TOKEN"),
+        },
+    },
     "CLIENT_URL": os.environ.get("CLIENT_URL"),
     "SENTRY_DSN": os.environ.get("SENTRY_DSN"),
 }
