@@ -1,5 +1,6 @@
 from datetime import datetime
 from connectors.alpaca.rest.client import alpaca_rest_client
+from connectors.tradier.rest.client import tradier_rest_client
 import pandas as pd
 
 
@@ -78,23 +79,18 @@ class Portfolio:
 
     @staticmethod
     async def get_orders():
-        orders = alpaca_rest_client.list_orders()
+        orders = tradier_rest_client.get_orders()
 
         formatted_orders = []
 
         for order in orders:
             formatted_orders.append({
                 "symbol": order.symbol,
-                "quantity": order.qty,
-                "filled_quantity": order.filled_qty,
+                "quantity": order.quantity,
                 "side": order.side,
                 "type": order.type,
-                "time_in_force": order.time_in_force,
-                "limit_price": order.limit_price,
-                "stop_price": order.stop_price,
-                "notional": order.notional,
-                "trail_percent": order.trail_percent,
-                "trail_price": order.trail_price
+                "time_in_force": order.duration,
+                "limit_price": order.price,
             })
 
         return formatted_orders
