@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 from models.portfolio import Portfolio
-from connectors.alpaca.rest.client import alpaca_rest_client
 
 router = APIRouter(
     prefix="/api/portfolio",
