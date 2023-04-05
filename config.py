@@ -21,9 +21,11 @@ config = {
     "TRADIER": {
         "ENABLE_LIVE_TRADING": strtobool(os.environ.get("TRADIER_ENABLE_LIVE_TRADING")),
         "LIVE": {
+            "ACCOUNT_NUMBER": os.environ.get("TRADIER_LIVE_ACCOUNT_NUMBER"),
             "ACCESS_TOKEN": os.environ.get("TRADIER_LIVE_ACCESS_TOKEN"),
         },
         "PAPER": {
+            "ACCOUNT_NUMBER": os.environ.get("TRADIER_PAPER_ACCOUNT_NUMBER"),
             "ACCESS_TOKEN": os.environ.get("TRADIER_PAPER_ACCESS_TOKEN"),
         },
     },
