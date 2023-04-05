@@ -7,55 +7,35 @@ import pandas as pd
 class Portfolio:
     @staticmethod
     async def get_positions():
-        positions = alpaca_rest_client.list_positions()
-
-        orders = alpaca_rest_client.list_orders()
-        stop_loss_orders = filter(lambda order: "stop" in order.type, orders)
-        stop_loss_orders = list(stop_loss_orders)
+        positions = tradier_rest_client.get_positions()
 
         formatted_positions = []
 
         for position in positions:
-            stop_loss_order = next((order for order in stop_loss_orders if position.symbol == order.symbol), None)
-
             formatted_positions.append({
-                "asset_class": position.asset_class,
                 "symbol": position.symbol,
-                "quantity": position.qty,
-                "side": position.side,
-                "exchange": position.exchange,
+                "quantity": position.quantity,
                 "cost_basis": position.cost_basis,
-                "market_value": position.market_value,
-                "average_entry_price": position.avg_entry_price,
-                "current_price": position.current_price,
-                "stop_price": stop_loss_order.stop_price if stop_loss_order else None,
-                "change_today": position.change_today,
-                "intraday_unrealized_pl": position.unrealized_intraday_pl,
-                "intraday_unrealized_pl_percent": position.unrealized_intraday_plpc,
-                "total_unrealized_pl": position.unrealized_pl,
-                "total_unrealized_pl_percent": position.unrealized_plpc
+                "date_acquired": position.date_acquired
             })
 
         return formatted_positions
 
     @staticmethod
     async def get_activities():
-        activities = alpaca_rest_client.get_activities()
+        history = tradier_rest_client.get_history(type="trade")
+        print(history)
 
         formatted_activities = []
 
-        for activity in activities:
-            if activity.activity_type == "FILL":
+        for event in history:
+            if event.activity_type == "trade":
                 formatted_activities.append({
-                    "activity_type": activity.activity_type,
-                    "cumulative_quantity": activity.cum_qty,
-                    "order_status": activity.order_status,
-                    "price": activity.price,
-                    "quantity": activity.qty,
-                    "side": activity.side,
-                    "symbol": activity.symbol,
-                    "transaction_time": activity.transaction_time,
-                    "type": activity.type
+                    "price": event.trade.price,
+                    "quantity": event.trade.quantity,
+                    "symbol": event.trade.symbol,
+                    "transaction_time": event.date,
+                    "type": event.type
                 })
 
         return formatted_activities
