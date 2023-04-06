@@ -1,4 +1,3 @@
-from connectors.alpaca.rest.client import alpaca_rest_client
 from connectors.tradier.rest.client import tradier_rest_client
 
 
@@ -18,3 +17,28 @@ class Account:
         }
 
         return summary
+
+    @staticmethod
+    async def get_positions():
+        positions = tradier_rest_client.get_positions()
+        return positions
+
+    @staticmethod
+    async def get_history():
+        history = tradier_rest_client.get_history()
+        return history
+
+    @staticmethod
+    async def get_gain_loss():
+        gain_loss = tradier_rest_client.get_gain_loss()
+        return gain_loss
+
+    @staticmethod
+    async def get_orders():
+        orders = tradier_rest_client.get_orders()
+        return orders
+
+    @staticmethod
+    async def get_order(order_id: str):
+        order = tradier_rest_client.get_order(order_id)
+        return order
