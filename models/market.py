@@ -1,76 +1,64 @@
-from connectors.alpaca.rest.client import alpaca_rest_client
-from alpaca_trade_api.rest import TimeFrame, TimeFrameUnit
-
-supported_crypto_tickers = ["BTCUSD", "ETHUSD", "LTCUSD", "BCHUSD"]
+from connectors.tradier.rest.client import tradier_rest_client
 
 
 class Market:
     @staticmethod
-    async def get_crypto_bars(symbol, timeframe, start):
-        alpaca_timeframe = None
-
-        match timeframe:
-            case 'minute':
-                alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Minute)
-            case 'hour':
-                alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Hour)
-            case 'day':
-                alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Day)
-            case 'week':
-                alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Week)
-            case 'month':
-                alpaca_timeframe = TimeFrame(1, TimeFrameUnit.Month)
-
-        bars = alpaca_rest_client.get_crypto_bars(symbol, alpaca_timeframe, start, limit=60, exchanges=['CBSE'])
-
-        formatted_bars = list()
-
-        for bar in bars:
-            formatted_bars.append({
-                "symbol": symbol,
-                "timestamp": bar.t,
-                "high": bar.h,
-                "low": bar.l,
-                "open": bar.o,
-                "close": bar.c,
-                "exchange": bar.x
-            })
-
-        return formatted_bars
+    def get_quotes(symbols: str):
+        quotes = tradier_rest_client.get_quotes(symbols=symbols)
+        return quotes
 
     @staticmethod
-    async def get_crypto_latest_bars():
-        response = alpaca_rest_client.get_latest_crypto_bars(supported_crypto_tickers, "CBSE")
-
-        bars_by_ticker = {}
-
-        for ticker in supported_crypto_tickers:
-            bar = response[ticker]
-            bars_by_ticker[ticker] = {
-                "high": bar.h,
-                "low": bar.l,
-                "open": bar.o,
-                "close": bar.c,
-                "timestamp": bar.t,
-                "volume": bar.v,
-                "weighted_volume": bar.vw,
-                "exchange": bar.x
-            }
-
-        return bars_by_ticker
+    def get_option_chains(symbol: str, expiration: str, greeks: bool = False):
+        option_chains = tradier_rest_client.get_option_chains(symbol=symbol, expiration=expiration, greeks=greeks)
+        return option_chains
 
     @staticmethod
-    async def get_crypto_latest_trades():
-        response = alpaca_rest_client.get_latest_crypto_trades(supported_crypto_tickers, "CBSE")
+    def get_option_strikes(symbol: str, expiration: str):
+        option_strikes = tradier_rest_client.get_option_strikes(symbol=symbol, expiration=expiration)
+        return option_strikes
 
-        trades_by_ticker = {}
+    @staticmethod
+    def get_option_expirations(symbol: str):
+        option_expirations = tradier_rest_client.get_option_expirations(symbol=symbol)
+        return option_expirations
 
-        for ticker in supported_crypto_tickers:
-            trade = response[ticker]
-            trades_by_ticker[ticker] = {
-                "price": trade.price,
-                "timestamp": trade.timestamp,
-                "exchange": trade.x
-            }
+    @staticmethod
+    def lookup_option_symbols(underlying: str):
+        option_symbols = tradier_rest_client.lookup_option_symbols(underlying=underlying)
+        return option_symbols
 
-        return trades_by_ticker
+    @staticmethod
+    def get_historical_quotes(symbol: str, start: str, end: str, interval: str = "daily"):
+        historical_quotes = tradier_rest_client.get_historical_quotes(symbol=symbol, start=start, end=end,
+                                                                      interval=interval)
+        return historical_quotes
+
+    @staticmethod
+    def get_time_and_sales(symbol: str, interval: str, start: str, end: str):
+        time_and_sales = tradier_rest_client.get_time_and_sales(symbol=symbol, interval=interval, start=start, end=end)
+        return time_and_sales
+
+    @staticmethod
+    def get_etb_securities():
+        etb_securities = tradier_rest_client.get_etb_list()
+        return etb_securities
+
+    @staticmethod
+    def get_clock():
+        clock = tradier_rest_client.get_clock()
+        return clock
+
+    @staticmethod
+    def get_calendar(month: str, year: str):
+        calendar = tradier_rest_client.get_calendar(month=month, year=year)
+        return calendar
+
+    @staticmethod
+    def search_companies(query: str):
+        companies = tradier_rest_client.search_companies(query=query)
+        return companies
+
+    @staticmethod
+    def lookup_symbol(query: str):
+        symbol = tradier_rest_client.lookup_symbol(query=query)
+        return symbol
